@@ -49,11 +49,14 @@ PACKAGECONFIG[threaded-resolver] = "--enable-threaded-resolver,--disable-threade
 PACKAGECONFIG[verbose] = "--enable-verbose,--disable-verbose"
 PACKAGECONFIG[zlib] = "--with-zlib=${STAGING_LIBDIR}/../,--without-zlib,zlib"
 
+CA_BUNDLE = "${sysconfdir}/ssl/certs/ca-certificates.crt"
+CA_BUNDLE_class-native = ""
+
 EXTRA_OECONF = " \
     --disable-libcurl-option \
     --disable-ntlm-wb \
     --enable-crypto-auth \
-    --with-ca-bundle=${sysconfdir}/ssl/certs/ca-certificates.crt \
+    --with-ca-bundle=${CA_BUNDLE} \
     --without-libmetalink \
     --without-libpsl \
 "
