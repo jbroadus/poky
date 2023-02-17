@@ -4,11 +4,20 @@
 #
 # Attempt to mount any added block devices and umount any removed devices
 
+USE_SYSTEMD_MOUNT=@USE_SYSTEMD_MOUNT@
 BASE_INIT="`readlink -f "@base_sbindir@/init"`"
 INIT_SYSTEMD="@systemd_unitdir@/systemd"
 MOUNT_BASE="@MOUNT_BASE@"
 
-if [ "x$BASE_INIT" = "x$INIT_SYSTEMD" ];then
+if [ -z "$USE_SYSTEMD_MOUNT" ]; then
+    if [ "x$BASE_INIT" = "x$INIT_SYSTEMD" ];then
+        USE_SYSTEMD_MOUNT=1
+    else
+        USE_SYSTEMD_MOUNT=0
+    fi
+fi
+
+if [ "$USE_SYSTEMD_MOUNT" = "1" ];then
     # systemd as init uses systemd-mount to mount block devices
     MOUNT="/usr/bin/systemd-mount"
     UMOUNT="/usr/bin/systemd-umount"
@@ -181,7 +190,7 @@ if [ "$ACTION" = "add" ] && [ -n "$DEVNAME" ] && [ -n "$ID_FS_TYPE" -o "$media_t
     # Note the root filesystem can show up as /dev/root in /proc/mounts,
     # so check the device number too
     if expr $MAJOR "*" 256 + $MINOR != `stat -c %d /`; then
-        if [ "`basename $MOUNT`" = "systemd-mount" ];then
+        if [ "$USE_SYSTEMD_MOUNT" = "1" ];then
             automount_systemd
         else
             automount

@@ -17,6 +17,10 @@ S = "${WORKDIR}"
 
 MOUNT_BASE = "/run/media"
 
+# If "1", force usage of systemd-mount. If empty, mount.sh will try to determine
+# the correct mount command at runtime.
+USE_SYSTEMD_MOUNT = "${@bb.utils.contains("DISTRO_FEATURES", "systemd", "1", "", d)}"
+
 do_install() {
     install -d ${D}${sysconfdir}/udev/rules.d
 
@@ -33,6 +37,7 @@ do_install() {
     sed -i 's|@systemd_unitdir@|${systemd_unitdir}|g' ${D}${sysconfdir}/udev/scripts/mount.sh
     sed -i 's|@base_sbindir@|${base_sbindir}|g' ${D}${sysconfdir}/udev/scripts/mount.sh
     sed -i 's|@MOUNT_BASE@|${MOUNT_BASE}|g' ${D}${sysconfdir}/udev/scripts/mount.sh
+    sed -i 's|@USE_SYSTEMD_MOUNT@|${USE_SYSTEMD_MOUNT}|g' ${D}${sysconfdir}/udev/scripts/mount.sh
 
     install -m 0755 ${WORKDIR}/network.sh ${D}${sysconfdir}/udev/scripts
 }
