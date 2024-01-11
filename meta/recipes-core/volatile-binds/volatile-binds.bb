@@ -40,6 +40,9 @@ FILES:${PN} += "${systemd_system_unitdir}/*.service ${servicedir}"
 # Set to 1 to forcibly skip OverlayFS, and default to copy+bind
 AVOID_OVERLAYFS = "0"
 
+SYSTEMD_VAR_DIR_USERS = "systemd-random-seed.service"
+SYSTEMD_VAR_DIR_USERS += "${@bb.utils.contains('MACHINE_FEATURES', 'wifi', 'systemd-rfkill.service', '', d)}"
+
 do_compile () {
     while read spec mountpoint; do
         if [ -z "$spec" ]; then
@@ -57,10 +60,9 @@ ${@d.getVar('VOLATILE_BINDS').replace("\\n", "\n")}
 END
 
     if [ -e "$var_lib_servicefile" ]; then
-        # As the seed is stored under /var/lib, ensure that this service runs
-        # after the volatile /var/lib is mounted.
-        sed -i -e "/^Before=/s/\$/ systemd-random-seed.service/" \
-               -e "/^WantedBy=/s/\$/ systemd-random-seed.service/" \
+        # Ensure that systemd services that write to /var/lib run after the volatile is mounted.
+        sed -i -e "/^Before=/s/\$/ ${SYSTEMD_VAR_DIR_USERS}/" \
+               -e "/^WantedBy=/s/\$/ ${SYSTEMD_VAR_DIR_USERS}/" \
                "$var_lib_servicefile"
     fi
 }
